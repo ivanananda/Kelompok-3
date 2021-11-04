@@ -3,3 +3,5 @@
 - [x] Presentasi
 - [ ] Cari ide project 
 - [ ] cari source code
+- [ ] Pelajari 
+- [ ] Buat Design
