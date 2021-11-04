@@ -212,7 +212,7 @@ void welcome()
     }else if( pilihan == "2" ){
       viewLogin();
     }else if( pilihan == "3" ){
-      cout << "\nTerimakasih sudah menggunakan aplikasi login sederhana." << endl;
+      cout << "\nTerimakasih sudah menggunakan aplikasi login sederhana!!" << endl;
       break;
     }else{
       cout << "Pilihan tidak tersedia!!" << endl;
