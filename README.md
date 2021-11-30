@@ -1,7 +1,7 @@
 # Timeline Project
 
 - [x] Presentasi
-- [ ] Cari ide project 
+- [x] Cari ide project 
 - [ ] cari source code
 - [ ] Pelajari 
 - [ ] Buat Design
