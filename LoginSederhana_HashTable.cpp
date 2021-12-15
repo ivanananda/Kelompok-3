@@ -1,4 +1,7 @@
 #include <iostream>
+#include <limits>
+#include <stdexcept>
+#include <string>
 using namespace std;
 
 // Hash Table
@@ -67,10 +70,10 @@ bool cekHapusAkun(int index)
   
 }
 
-
 // print Data Akun
 void printDataAkun()
 {
+  system("cls");
   cout << "\nData Akun : " << endl;
   cout << "| Index\t - Username - Password |" << endl;
   for( int i = 0; i < 26; i++ ){
@@ -92,6 +95,7 @@ void printDataAkun()
 // view Daftar
 void viewDaftar()
 {
+  system("cls");
   string username, password;
   cout << "\n== MENU DAFTAR ==" << endl;
   cout << "Masukkan username & password" << endl;
@@ -100,7 +104,7 @@ void viewDaftar()
   cout << "Isi Password anda : ";
   cin >> password;
 
-  if( cekDaftar(username, password) ){
+  if(cekDaftar(username, password) ){
     cout << "Akun berhasil terdaftar!!" << endl;
   }else{
     cout << "Akun gagal terdaftar!!" << endl;
@@ -120,7 +124,7 @@ void viewTambahAkun()
   cout << "Isi Password akun : ";
   cin >> password;
 
-  if( cekDaftar(username, password) ){
+  if(cekDaftar(username, password) ){
     cout << "Akun berhasil terdaftar!!" << endl;
   }else{
     cout << "Akun gagal terdaftar!!" << endl;
@@ -132,6 +136,8 @@ void viewTambahAkun()
 // viewHapusAkun
 void viewHapusAkun()
 {
+  system("cls");
+  printDataAkun();
   int index;
   cout << "\n== MENU HAPUS AKUN ==" << endl;
   cout << "Isi index : ";
@@ -166,6 +172,7 @@ void viewMenuLogin()
       printDataAkun();
     }else if( pilihan == "4" ){
       cout << "Anda berhasil logout" << endl;
+      system("cls");
       break;
     }else{
       cout << "Pilihan tidak tersedia!!" << endl;
@@ -176,6 +183,7 @@ void viewMenuLogin()
 // view Login
 void viewLogin()
 {
+  system("cls");
   string username, password;
   cout << "== VIEW LOGIN ==" << endl;
   cout << "Masukkan username & password" << endl;
