@@ -1,0 +1,396 @@
+<style>
+    canvas{
+        width:200px;
+        height:500px;
+        background:"white";
+        border-top:black solid 1px;
+        border-bottom:black solid 1px;
+    }
+    input{
+        width:90%;
+    }
+    select{
+        width:90%;
+    }
+    button{
+        width:40%;
+    }
+    html{
+        background:rgb(255, 255, 255);
+    }
+    
+    </style>
+
+
+<div id="everything">
+    
+  
+<div style="height:200px">
+    <center style="position:relative">
+        <div style="width:200px;height:500px;border:black solid 1px;position:absolute;top:160px; left:40px;overflow-y:scroll">
+    <strong>Info:</strong>
+    <p id="log">
+    </p></div>
+        
+        
+        
+        <!----Menu sebelah kanan--->
+        <div style="width:200px;height:500px;border:black solid 1px;position:absolute;top:160px; right:40px;overflow-y:scroll;z-index:200;"> 
+            
+    <label>Ukuran Table:</label><select id="size">
+    <option>10</option>
+    <option>20</option>
+    </select>
+           
+<label>Hash Method</label><select id="hash_method">
+    <option >Linear Probing</option>
+    <option >Quadratic Probing</option>
+    <option >Double Hashing</option>
+    </select>
+<label>Hash Function:</label><br>
+    <input id="hash_function">
+<label>Key</label><input id="key">
+    <button onclick="add()">Input</button>
+        <button onclick="remove()">Hapus</button>
+    <button onclick = "initialize()">Sesuaikan table</button>  
+        </div>
+        
+       
+
+<h1>Hash table dengan GUI</h1>
+<h5>Mochammad Fajar Adriyansyah</h5>
+        
+        <div style="position:relative">
+<canvas id="canvas">  
+</canvas>
+<div id="animate_block" style="width:200px;height:45px;margin-top:-500px;">   
+        </div>
+            </div>
+    </center>
+      
+</div>
+    <div id="windowtoosmall" style="display:none;text-align:center;margin-top:50%;">
+        WINDOW TERLALU KECIL SILAHKAN DIPERBESAR <p id="currentSize"></p>
+    </div>
+<script>
+    
+
+  var canvas = document.getElementById("canvas");
+  var ctx = canvas.getContext("2d");
+    var size = document.getElementById('size');
+    var key_input = document.getElementById('key');
+    var log = document.getElementById('log');
+    var hash_method = document.getElementById('hash_method');
+    var animate_block = document.getElementById('animate_block');
+  ctx.canvas.width = 1000;
+  ctx.canvas.height = 2500;
+    canvas_display_height = 500;
+  ctx.fillStyle = "black";
+
+var global_table = {};
+var initialized = false;
+var table_size = 10;    
+
+ /*----------Pesan sebelah kiri ---------*/
+function add_log(message,type){
+    if(type=="warning"){
+       log.innerHTML +="<p style='color:red'>"+message+"</p>";
+    }else if(type=="success"){
+        log.innerHTML +="<p style='color:green'>"+message+"</p>";
+    }else if(type=="info"){
+        log.innerHTML +="<p style='color:blue'>"+message+"</p>";
+    }else if(type=="pending"){
+        log.innerHTML +="<p style='color:orange'>"+message+"</p>";
+    }
+}
+    /* Menyesuaikan tampilan table
+    */
+function initialize(){
+   var size_select = size.options[size.selectedIndex].text;
+    table_size = size_select;
+    size_one_slot = ctx.canvas.height / parseInt(size_select);
+    ctx.clearRect(0,0,ctx.canvas.width,ctx.canvas.height);
+    global_table = HashTable(parseInt(size_select));
+    for(i=0;i<global_table.table.length;i++){
+        draw_slot(i,size_one_slot,global_table.table[i]);
+    }
+    initialized = true;
+}
+/*table    
+    */
+function draw_table(table){
+    ctx.clearRect(0,0,ctx.canvas.width,ctx.canvas.height);
+    var size_select = table_size;
+    console.log(table_size);
+    size_one_slot = ctx.canvas.height / parseInt(size_select);
+    for(i=0;i<table.length;i++){
+        draw_slot(i,size_one_slot,table[i]);
+    }
+}
+/* Slot
+    */
+function draw_slot(num,size,key){
+    ctx.fillStyle = 'black';
+    ctx.fillRect(0,(num+1)*size,ctx.canvas.width,3);
+    ctx.font = '50px serif';
+    ctx.fillText(num,0, (num+1)*size-size/2);
+    ctx.fillRect(50,(num)*size+(size*0.1),5,size*0.8);
+    ctx.fillText(key, ctx.canvas.width/2-20, (num+1)*size-size/2);
+}
+    
+    
+/*---------------Tombol input dan hapus--------------------*/
+function remove(){
+    if(key_input.value=="animating..."){
+        return;
+    }
+    var key_to_remove = key_input.value;
+    if(key_to_remove==""){
+        return;
+    }else{
+        if(global_table.cur_store==0){
+            return;
+        }
+        log.innerHTML = "";
+        add_log("Menghapus:  "+key_to_remove,"info");
+        if(initialized){
+        global_table.remove(key_input.value);
+        draw_table(global_table.table);
+        }
+       key_input.value="animating...";
+        key_input.disabled=true;
+    }
+}
+function add(){
+    if(key_input.value=="animating..."){
+        return;
+    }
+    if(global_table.cur_store>=global_table.size){
+        add_log("Table Penuh","warning");
+            return;
+    }
+        var key_to_add = key_input.value;
+    if(key_to_add==""){
+        return;
+    }else{
+        log.innerHTML = "";
+        add_log("Memasukkan:  "+key_to_add,"info");
+        if(initialized){
+            global_table.insert(key_input.value);
+            draw_table(global_table.table);
+        }
+       key_input.value="animating...";
+        key_input.disabled=true;
+    }
+}
+    
+/*----------------Hash table --------------------*/    
+    
+
+var HashTable = function(size){
+    var self = {};
+    self.size = size;
+    self.table = [];
+    self.cur_store = 0;
+    self.hash_method = hash_method.value;
+    for(i=0;i<self.size;i++){
+        self.table.push("");
+    }
+    /*Memasukan key kedalam hash table */
+    self.insert = function(key){
+        
+        if(key==""){
+            return;
+        }
+        hashed = self.hash_function(key) % self.size;
+        
+        var idx= hashed;
+        for(i=0;i<self.size;i++){
+            //Jika kosong, input
+            if(global_table.table[idx] == ""){
+                self.cur_store +=1;
+                animate(i,idx,"success",key);
+                return;
+                //Jika tidak, terapkan skema resolusi collision
+            }else{                
+                animate(i,idx,"occupied",global_table.table[idx]);
+                if(hash_method.value=="Linear Probing"){
+                idx = (idx+1)% self.size;
+                }else if(hash_method.value=="Quadratic Probing"){
+                    idx = (idx+Math.pow((i+1),2))% self.size;
+                }else if(hash_method.value=="Double Hashing"){
+                    idx = (idx+Math.pow((i+1),2))% self.size;
+                }
+            }
+        }
+        animate(1000,0,"hashingfailed","");
+    }
+    
+    /*Menghapus key pada hashtable*/
+    self.remove = function(key){
+        if(key == ""){
+        return;
+        }
+        hashed = self.hash_function(key) % self.size;
+        var idx = hashed;
+        for(i = 0; i < self.size ; i++){
+         if(global_table.table[idx] == key){
+             self.cur_store -= 1;
+             animate(i,idx,"removed","")
+             return;
+            }else{                
+                animate(i,idx,"removingoccupied",global_table.table[idx]);
+                if(self.hash_method=="Linear Probing"){
+                idx = (idx+1)% self.size;
+                }else if(self.hash_method=="Quadratic Probing"){
+                       idx = (idx+Math.pow(i,2))% self.size;
+                }else if(hash_method.value=="Double Hashing"){
+                    idx = (idx + i*(1 + idx%(self.size-1)))
+                }
+            }
+        }
+        animate(1000,0,"notfound","");
+    }
+    
+    /*Fungsi Hash yang digunakan ketika terjadi collision*/
+    self.hash_function = function(key){
+        var hashed = 0;
+        /*Untuk mengubah kunci hash menjadi nilai hash  */
+        for(i=0; i < key.length; i++){
+            hashed += key[i].charCodeAt(0) * (i+1);
+        }
+        return hashed
+    }
+    return self;
+}
+
+
+/*---------Interval Loop --------*/
+    
+    /*memeriksa pemilihan metode Hash
+     dan mengisi tampilan fungsi Hash.
+     Pada saat yang sama memeriksa validitas ukuran jendela,
+     Pada saat yang sama juga memunculkan tumpukan animasi, jika
+     tumpukan animasi memiliki item di dalamnya untuk dianimasikan
+    */
+setInterval(function(){   
+    var hash_function_input = document.getElementById('hash_function');
+    if(document.getElementById("hash_method").value=="Linear Probing"){
+        hash_function_input.disabled = true;
+        hash_function_input.value = "(h(k)+i)%m";
+    }else if(document.getElementById("hash_method").value=="Quadratic Probing"){
+        hash_function_input.disabled = true;
+        hash_function_input.value = "(h(k)+i^2)%m)";
+    }else if(document.getElementById("hash_method").value=="Double Hashing"){
+        hash_function_input.disabled = true;
+        hash_function_input.value = "(h(k)+i^g(k))%m";
+    }
+if(window.innerHeight<1000 || window.innerWidth<800){
+    document.getElementById('everything').style.display = "none";
+    document.getElementById('windowtoosmall').style.display = "block";
+    document.getElementById("currentSize").innerHTML = "Height: " +window.innerHeight + ", Width: " + window.innerWidth;
+    
+}else{
+    document.getElementById('everything').style.display = "block";
+     document.getElementById('windowtoosmall').style.display = "none";
+    document.getElementById("currentSize").innerHTML = "";
+}
+    if(animation_stack.length>0){        
+        if(animating==false){
+            animate_task = animation_stack.pop();
+            animate_num = animate_task.num;
+            animate_type = animate_task.type;
+            animate_key = animate_task.key;
+            window.requestAnimationFrame(animate_show);
+        }
+    }
+}, 100);
+/*----------------------------------*/    
+        
+/*------------------ANIMASI----------------------*/
+    
+    /* 
+         -Sukses: sorot satu blok hijau
+         -ditempati : sorot blok oranye
+         -dihapus:sorot blok ungu
+         -removedOccupied : sorot satu blok oranye
+        
+            */
+var animation_stack = [];
+var progress = 0;
+var animate_num = 0;
+var animate_type = "none";
+var animate_key = "";
+var animating = false;    
+function animate(priority,num,type,key){
+    animate_task = {};
+    animate_task.priority = priority;
+    animate_task.num = num;
+    animate_task.type = type;
+    animate_task.key = key;
+    animation_stack.push(animate_task);
+    animation_stack.sort(function(a,b){
+        if(a.priority>b.priority){
+            return -1;
+        }
+        if(b.priority<a.priority){
+            return 1;
+        }
+        return 0;
+    });
+}
+function animate_show() {    
+    if(animate_type=="notfound"){
+        add_log("Tidak ditemukan, gagal menghapus","warning");
+        key_input.value="";
+        key_input.disabled=false;
+        return;
+    }else if(animate_type=="hashingfailed"){
+        add_log("Hashing gagal :( mungkin coba hash yang lain","warning");
+        key_input.value="";
+        key_input.disabled=false;
+        return;
+    }
+    var size_select = table_size;
+    size_one_slot = canvas_display_height/parseInt(size_select);    
+    animate_block.style.height = size_one_slot;
+    animate_block.style.marginTop = -1 * canvas_display_height + animate_num*size_one_slot;
+    global_table.table[animate_num] = animate_key;
+      draw_table(global_table.table);
+  if (progress < 20) {
+      animating = true;
+      if(animate_type=="success"){
+          animate_block.style.background = "rgba(0,200,21,"+(1-(progress/20)+-0.05).toString()+")";         
+      }else if(animate_type=="occupied"){
+          animate_block.style.background = "rgba(255,147,21,"+(1-(progress/20)+-0.05).toString()+")";         
+      }else if(animate_type=="removed"){
+          animate_block.style.background = "rgba(255,47,200,"+(1-(progress/20)+-0.05).toString()+")"; 
+      }else if(animate_type=="removingoccupied"){
+          animate_block.style.background = "rgba(255,147,21,"+(1-(progress/20)+-0.05).toString()+")"; 
+      }
+      progress +=1;
+    window.requestAnimationFrame(animate_show);    
+  }else{
+      ctx.fillStyle = 'black';
+      if(animate_type=="success"){
+        add_log("Memasukkan "+animate_key+" ke index |"+animate_num+"|","success");
+        key_input.value="";
+          key_input.disabled=false;
+      }else if(animate_type=="occupied"){
+          add_log("index |"+animate_num+"| Ditempati","pending");
+      }else if(animate_type=="removed"){
+          add_log("Menghapus "+animate_key+" di index "+animate_num,"success");
+          key_input.value="";
+          key_input.disabled=false;
+      }else if(animate_type=="removingoccupied"){
+          add_log("|"+animate_num+"| tidak ditemukan","pending");
+      }
+      progress = 0;
+      animate_num = 0;
+      animating = false;
+      return;
+  }
+}
+    initialize();
+
+  </script>
